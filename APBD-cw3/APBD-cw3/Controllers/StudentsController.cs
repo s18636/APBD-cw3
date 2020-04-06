@@ -59,11 +59,39 @@ namespace APBD_cw3.Controllers
 
 
         [HttpGet("{id}")]
-        public IActionResult GetStudent(int id)
+        public IActionResult GetStudent(string id)
         {
-            //_dbService.getStudents().Find(id);
+            var enrollments = new List<Enrollment>();
 
-            return NotFound("Nie znaleziono studenta");
+            using (var con = new SqlConnection("Data Source=db-mssql;Initial Catalog=s18636;Integrated Security=True")) 
+            { 
+                using (var com = new SqlCommand())
+                {
+                    com.Connection = con;
+                    com.CommandText = "SELECT * " +
+                        "FROM Enrollment e, Student s " +
+                        "WHERE s.idEnrollment = e.idEnrollment AND s.indexnumber = @id ";
+                    com.Parameters.AddWithValue("id", id);
+
+                    con.Open();
+
+                    var dr = com.ExecuteReader();
+                    while (dr.Read())
+                    {
+                        var en = new Enrollment();
+                        en.idEnrollment = Int32.Parse(dr["idEnrollment"].ToString());
+                        en.semester = Int32.Parse(dr["semester"].ToString());
+                        en.idStudy = Int32.Parse(dr["idStudy"].ToString());
+                        en.startDate = dr["startDate"].ToString();
+
+                        enrollments.Add(en);
+                    }
+
+                }
+            }
+
+
+            return Ok(enrollments);
         }
 
         
