@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+using APBD_cw3.DAL_Data_Access_layer_;
 
 namespace APBD_cw3.DTOs.Requests
 {

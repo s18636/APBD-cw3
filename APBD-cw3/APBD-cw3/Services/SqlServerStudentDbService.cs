@@ -4,6 +4,7 @@ using APBD_cw3.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using System;
+using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
 
@@ -22,11 +23,6 @@ namespace Wyklad5.Services
         public IActionResult EnrollStudent(EnrollStudentRequest request)
         {
             
-            var st = new Student();
-            st.FirstName = request.FirstName;
-            st.LastName = request.LastName;
-            st.IndexNumber = request.IndexNumber;
-            st.BirthDate = request.Birthdate;
             
 
             using (var con = new SqlConnection("Data Source=db-mssql;Initial Catalog=s18636;Integrated Security=True"))
@@ -88,7 +84,7 @@ namespace Wyklad5.Services
 
                     com.CommandText = "INSERT INTO Student(FirstName, LastName, IndexNumber, BirthDate, IdEnrollment) VALUES (@firstName, @lastName, @indexNumber, @birthDate, @idEnrollment)";
                     com.Parameters.AddWithValue("idEnrollment", idEnrollment);
-                    com.Parameters.AddWithValue("birthDate", request.Birthdate);
+                    com.Parameters.AddWithValue("birthDate", request.Birthdate.Date);
                     com.Parameters.AddWithValue("indexNumber", request.IndexNumber);
                     com.Parameters.AddWithValue("firstName", request.FirstName);
                     com.Parameters.AddWithValue("lastName", request.LastName);
@@ -96,7 +92,12 @@ namespace Wyklad5.Services
                     com.ExecuteNonQuery();
                     transaction.Commit();
 
-                    return new AcceptedResult();
+                    return new OkObjectResult(new EnrollStudentResponse()
+                    {
+                        LastName = request.LastName,
+                        Semester = 1,
+                        StartDate = DateTime.Now
+                    }) ;
                 }
                 catch (SqlException exc)
                 {
@@ -107,9 +108,74 @@ namespace Wyklad5.Services
             }
         }
 
+        public IActionResult getStudents()
+        {
+            var students = new List<Student>();
+            
+            using (var client = new SqlConnection("Data Source=db-mssql;Initial Catalog=s18636;Integrated Security=True"))
+            {
+                using (var con = new SqlCommand())
+                {
+                    con.Connection = client;
+                    con.CommandText = "SELECT IndexNumber, FirstName, LastName, BirthDate, Name, Semester" +
+                        "  FROM Student s, enrollment e, Studies " +
+                        "  WHERE e.idEnrollment = s.idEnrollment AND e.idStudy = Studies.idStudy";
+
+                    client.Open();
+
+                    var dr = con.ExecuteReader();
+                    while (dr.Read())
+                    {
+                        var st = new Student();
+                        st.IndexNumber = dr["IndexNumber"].ToString();
+                        st.FirstName = dr["FirstName"].ToString();
+                        st.LastName = dr["LastName"].ToString();
+                        st.BirthDate = DateTime.Parse(dr["BirthDate"].ToString());
+
+                        students.Add(st);
+                    }
+
+                }
+            }
+
+            return new OkObjectResult(students);
+        }
+
         public IActionResult PromoteStudents(int semester, string studies)
         {
-            throw new NotImplementedException();
-        }
+            using (var con = new SqlConnection("Data Source=db-mssql;Initial Catalog=s18636;Integrated Security=True"))
+            using (var com = new SqlCommand())
+            {
+                com.Connection = con;
+
+                con.Open();
+                try {
+                    com.CommandText = "SELECT idEnrollmenr FROM enrollment e INNER JOIN studies s ON e.idStudies = s.idStudies WHERE s.name = @studies AND e.semester = @semester";
+                    com.Parameters.AddWithValue("studies", studies);
+                    com.Parameters.AddWithValue("semester", semester);
+
+                    var Reader = com.ExecuteReader();
+                    if (!Reader.Read()) 
+                    {
+                        Reader.Close();
+                        return new BadRequestResult();
+                    }
+
+                    com.CommandText = "EXEC promoteStudent(@semester, @studies)";
+                    com.Parameters.AddWithValue("semester", semester);
+                    com.Parameters.AddWithValue("studies", semester);
+
+                    com.ExecuteNonQuery();
+
+                    return new AcceptedResult();
+
+                }
+                catch (SqlException exc)
+                {
+                    //transaction.Rollback();
+                    return new BadRequestResult();
+                }
+            }
+            }
     }
 }

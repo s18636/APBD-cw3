@@ -30,8 +30,11 @@ namespace APBD_cw3.Controllers
             return _dbService.EnrollStudent(request);
         }
 
-        
+        [HttpPost("promotions")]
+        public IActionResult promoteStudent(string studiesName, int semester) 
+        {
+            return _dbService.PromoteStudents(semester, studiesName);
+        }
 
-        
     }
 }
