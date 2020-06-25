@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Wyklad5.Services;
 
 namespace APBD_cw3
 {
@@ -26,7 +27,7 @@ namespace APBD_cw3
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<IDbService, MockDbService>();
+            services.AddSingleton<IStudentDbService, SqlServerStudentDbService>();
             services.AddControllers();
         }
 
