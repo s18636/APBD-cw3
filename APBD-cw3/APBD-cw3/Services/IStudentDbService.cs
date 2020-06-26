@@ -13,5 +13,6 @@ namespace Wyklad5.Services
         public IActionResult PromoteStudents(int semester, string studies);
         public IActionResult getStudents();
         public bool CheckIndexNumber(string index);
+        public bool CheckCredential(string login, string password);
     }
 }

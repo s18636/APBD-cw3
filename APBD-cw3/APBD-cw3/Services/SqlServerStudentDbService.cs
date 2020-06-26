@@ -20,6 +20,23 @@ namespace Wyklad5.Services
 
         }
 
+        public bool CheckCredential(string login, string password)
+        {
+            using (var con = new SqlConnection("Data Source=db-mssql;Initial Catalog=s18636;Integrated Security=True"))
+            using (var com = new SqlCommand())
+            {
+                com.Connection = con;
+                con.Open();
+
+                com.CommandText = "select 1 FROM student s WHERE s.indexNumber = @indexNumber AND s.password = @password";
+                com.Parameters.AddWithValue("indexNumber", login);
+                com.Parameters.AddWithValue("password", password);
+
+                SqlDataReader Reader = com.ExecuteReader();
+                return Reader.Read();
+            }
+            }
+
         public bool CheckIndexNumber(string index)
         {
             using (var con = new SqlConnection("Data Source=db-mssql;Initial Catalog=s18636;Integrated Security=True"))
