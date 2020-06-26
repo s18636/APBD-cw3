@@ -20,6 +20,22 @@ namespace Wyklad5.Services
 
         }
 
+        public bool CheckIndexNumber(string index)
+        {
+            using (var con = new SqlConnection("Data Source=db-mssql;Initial Catalog=s18636;Integrated Security=True"))
+            using (var com = new SqlCommand()) {
+                com.Connection = con;
+                con.Open();
+                com.CommandText = "Select 1 FROM student s WHERE s.indexNumber = @index";
+                com.Parameters.AddWithValue("index", index);
+
+                var Reader = com.ExecuteReader();
+                var Read = Reader.Read();
+
+                return Read;
+            }
+        }
+
         public IActionResult EnrollStudent(EnrollStudentRequest request)
         {
             
@@ -155,7 +171,7 @@ namespace Wyklad5.Services
                     com.Parameters.AddWithValue("semester", semester);
 
                     var Reader = com.ExecuteReader();
-                    if (!Reader.Read()) 
+                    if (!Reader.Read())
                     {
                         Reader.Close();
                         return new BadRequestResult();
@@ -170,12 +186,12 @@ namespace Wyklad5.Services
                     return new AcceptedResult();
 
                 }
-                catch (SqlException exc)
+                catch (SqlException  exc)
                 {
                     //transaction.Rollback();
                     return new BadRequestResult();
                 }
             }
-            }
+        }
     }
 }
